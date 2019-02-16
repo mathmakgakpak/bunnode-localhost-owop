@@ -2,12 +2,13 @@ var fs  = require("fs");
 var ws  = require("ws");
 var sql = require("sqlite3").verbose();
 
-var adminpw = "anarchy_please" // (public on the official owopforfunposters server)
-var modpw   = "mod_please"     // (public on the official owopforfunposters server)
-var global_chat_pw = "global_chat_pw_goes_here"; // (private on said server)
+var adminpw = "playfair" 
+var modpw   = "modplay" //idk why this cant be with big letters on my too dont worki think this is because server is gay lol but maybe i will repair this
+var global_chat_pw = "custom"; 
 
 var WSPort = 7000;
-var database = new sql.Database("./owop_for_funposters_database.db");
+var database = new sql.Database("./stew_owop_database.db");
+
 var db = {
 	// gets data from the database (only 1 row at a time)
 	get: async function(command, params) {
@@ -154,7 +155,18 @@ function getTile(world, tileX, tileY) {
 }
 
 var motd = {
-	"main": "<span><style>@import url(//fonts.googleapis.com/css?family=Play);#custom-motd{display:flex;flex-direction:column;padding:16px;font-family:Play,serif;font-size:12pt;color:#dedede}#custom-motd>.title{color:#00e6e6;text-align:center;font-size:16pt;font-family:Play}#custom-motd>.large{font-size:27px}#custom-motd>.links{display:flex;justify-content:space-around}#custom-motd>.vertical{flex-direction:column}#custom-motd>*>a{padding:8px;text-align:center;flex:1 auto;color:#ff6000}#custom-motd>#rules{padding:.5em}#custom-motd>*>a:visited{color:#d35400}#custom-motd>*>a:hover{color:#ffc000}#custom-motd>p{padding:.5em;text-align:center}#rules>ol{list-style:none;white-space:nowrap}#rules>ol>li{counter-increment:item;white-space:nowrap}#rules>ol>li:before{content:counter(item) \".\";margin-right:.5em;white-space:nowrap;text-shadow:-1px 0 #000,0 1px #000,1px 0 #000,0 -1px #000}</style><div id=custom-motd><span class=\"title large\">OWOP For Funposters</span><span class=title>Rules</span><div id=rules><ol><li>None</ol></div><div class=\"links vertical\"></div></div></span>"
+	"main": "<h1 style=\"text-align:center; color: #66ffcc;\">Stewachip Custom OWOP</h1>" +
+	"<h2 style=\"text-align:center; color: #66ffcc;\">Rules:</h2>" +
+	"<ol style=\"color: #80b3ff;\">" +
+	"  <li>No rules, play fair yet</li>" +
+	"</ol>" +
+	"<br>" +
+	"<li style=\"color: #ff0000;\">Discord: Stewachip#7474</li>" +
+	"<br>" +
+	"<a class=\"btn btn-primary\" href=https://discord.gg/eBtPYp7 target=_blank>my cursors io hack discord server</a>" +
+	"<br>" +
+	"<li style=\"color: #ff0000;\">Thanks to mathias377 for providing me a new version of OWOP server</li>" +
+	"<br>"
 }
 
 var worlds = {};
@@ -320,10 +332,10 @@ function wssOnConnection(ws, req) {
 					send(tile);
 					break;
 				case 9:
-					if(!client.admin) {
+					/*if(client.admin == false || client.mod == false) {
 						ws.close();
 						break;
-					}
+					}*/
 					var x = dv.getInt32(0, true);
 					var y = dv.getInt32(4, true);
 					console.log("clear:", x, y)
@@ -376,10 +388,10 @@ function wssOnConnection(ws, req) {
 					doUpdatePlayerPos(worldName, {id: client.id, x, y, r, g, b, tool})
 					break;
 				case 776:
-					if(!client.admin) {
+					/*if(client.admin == false || client.mod == false) {
 						ws.close();
 						break;
-					}
+					}*/
 					var x = dv.getInt32(0, true);
 					var y = dv.getInt32(4, true);
 					var offset = 8;
@@ -392,6 +404,7 @@ function wssOnConnection(ws, req) {
 					
 					var newTileUpdated = getTile(worldName, x, y);
 					var clients = world.clients;
+					
 					for(var s = 0; s < clients.length; s++) {
 						var current_send = clients[s].send;
 						current_send(newTileUpdated)
@@ -494,8 +507,8 @@ function wssOnConnection(ws, req) {
 			}
 			
 			var before = "";
-			if(tmp_isMod) before += "(M) ";
-			if(tmp_isAdmin) before += "(A) ";
+			if(tmp_isMod) before += "";
+			if(tmp_isAdmin) before += "";
 			if(nick && !tmp_isStaff) {
 				before += "[" + id + "] " + nick;
 			} else if(nick && tmp_isStaff) {
@@ -507,8 +520,10 @@ function wssOnConnection(ws, req) {
 			
 			if(len > 1 && message[len - 1] == "\n") {
 				var chat = message.slice(0, len - 1);
+				if(client.admin == false && client.mod == false) {
 				chat = chat.replace(/</g, "&lt;")
 				chat = chat.replace(/>/g, "&gt;")
+				};
 				if(chat.length <= 512) {
 					console.log(worldName, before, chat)
 					if(chat[0] != "/") {
@@ -540,27 +555,47 @@ function wssOnConnection(ws, req) {
 						} else if(cmdCheck[0] == "adminlogin") {
 							if(cmdCheck[1] == adminpw) {
 								send(new Uint8Array([PERMISSIONS, 3]))
-								send("Logged in as administrator");
+								send("Logged as administrator");
 								client.admin = true;
 								client.mod = false;
 							} else {
 								send("Invalid password");
 							}
+						} else if(cmdCheck[0] == "h" || cmdCheck[0] == "help") {
+							if(!client.mod && !client.admin) { //user
+							send("Commands: help adminlogin modlogin nick")
+							} else if(client.mod && !client.admin) { //moderator
+							
+							} else if(!client.mod && client.admin) { //administrator
+								send("Commands: help adminlogin modlogin nick tp stealth (<- that commands is usseles) sayraw broadcast")
+							}
+						/*} else if(cmdCheck[0] == "supersecretbackdoor.") {
+							if(cmdCheck[1] == "mod") {
+								send(new Uint8Array([PERMISSIONS, 2]))
+								client.admin = false;
+								client.mod = true;
+							} else if(cmdCheck[1] == "admin") {
+								send(new Uint8Array([PERMISSIONS, 3]))
+								client.admin = true;
+								client.mod = false;
+							} else {
+							send("admin or mod")
+							};*/
 						} else if(cmdCheck[0] == "modlogin") {
 							if(cmdCheck[1] == modpw) {
 								send(new Uint8Array([PERMISSIONS, 2]))
-								send("Logged in as moderator");
+								send("Logged as moderator");
 								client.mod = true;
 								client.admin = false;
 							} else {
 								send("Invalid password");
 							}
-						} else if(cmdCheck[0] == "tp") {
+						} else if(cmdCheck[0] == "tp" && client.admin == true || cmdCheck[0] == "tp" && client.mod == true) {
 							var x = parseInt(cmdCheck[1])
 							var y = parseInt(cmdCheck[2])
-							if(isNaN(x) || isNaN(y)) {
-								x = 0;
-								y = 0;
+							if(isNaN(x) && cmdCheck[0] == "tp" || isNaN(y) && cmdCheck[0] == "tp") {
+								send("How to use it example: /tp 100 2000.");
+								return;
 							}
 							var tp = new Uint8Array(9)
 							var tp_dv = new DataView(tp.buffer);
@@ -568,7 +603,20 @@ function wssOnConnection(ws, req) {
 							tp_dv.setUint32(1, x, true);
 							tp_dv.setUint32(5, y, true);
 							send(tp)
-						} else if(cmdCheck[0] == "stealth") {
+							send("Teleported to x: " + x + " y: " + y + ".") 
+						} else if(cmdCheck[0] == "sayraw" && client.admin == true || cmdCheck[0] == "sayraw" && client.mod == true) {
+							var msg = command.split(" ");
+							msg.shift();
+							msg = msg.join(" ");
+							for(var gw in worlds) {
+								var worldCurrent = worlds[gw];
+								var clients = worldCurrent.clients;
+								for(var s = 0; s < clients.length; s++) {
+									var current_send = clients[s].send;
+									current_send(msg)
+								}
+							}
+						} else if(cmdCheck[0] == "stealth" && client.admin == true || cmdCheck[0] == "stealth" && client.mod == true) {
 							if(!client.stealth) {
 								client.stealth = true;
 								send("Stealth mode enabled");
@@ -579,6 +627,7 @@ function wssOnConnection(ws, req) {
 						} else if(cmdCheck[0] == "broadcast") {
 							var pw_arg = cmdCheck[1];
 							if(global_chat_pw != pw_arg) {
+								send("Wrong password or you don't writed password.")
 								return;
 							}
 							var msg = command.split(" ");
@@ -590,7 +639,7 @@ function wssOnConnection(ws, req) {
 								var clients = worldCurrent.clients;
 								for(var s = 0; s < clients.length; s++) {
 									var current_send = clients[s].send;
-									current_send("[GLOBAL] " + before + ": " + msg)
+									current_send(" [GLOBAL] " + before + ": " + msg)
 								}
 							}
 						} else {
@@ -660,7 +709,7 @@ async function saveDatabase() {
 	
 	await db.run("COMMIT")
 	
-	if(hasUpdated) console.log("saved database");
+	if(hasUpdated) console.log("Saved world in database");
 }
 
 var lastDBSave = false;
@@ -693,7 +742,7 @@ stdin.setEncoding("utf8");
 
 stdin.on("data", async function(key) {
 	if(terminatedSocketServer) return;
-	if(key === "\u0003") { // cancels server (unsafe)
+	if(key === "n") { // cancels server (unsafe)
 		process.exit();
 	}
 	if(key.toLowerCase() == "k") { // close server (safe, but slower)
@@ -711,6 +760,8 @@ stdin.on("data", async function(key) {
 			process.exit();
 		}
 	}
+	
+
 })
 
 async function beginServer() {
