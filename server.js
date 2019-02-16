@@ -65,5 +65,5 @@ var server = http.createServer(function(req, res) {
 })
 server.listen(9001, function() {
 	var addr = server.address();
-	console.log("OWOP for spammers CLIENT\n" + addr.port + ". Address: " + addr.address + ":" + addr.port)
+	console.log("Stewachip Custom OWOP\n" + addr.port + ". Address: " + addr.address + ":" + addr.port)
 });
