@@ -1,2 +1,2 @@
-# bunnode-localhost-owop
-Localhost owop built in Bunnode
+# owopforfunposters
+My custom OWOP server for anyone to be a god
