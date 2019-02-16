@@ -15,8 +15,6 @@ color 03
 echo Install all need resources Now
 timeout 3 >nul
 npm install sqlite3
-cls
-npm install sqlite3
 pause
 cls
 echo Installed.
