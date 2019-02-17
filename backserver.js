@@ -523,7 +523,7 @@ function wssOnConnection(ws, req) {
 				chat = chat.replace(/</g, "&lt;")
 				chat = chat.replace(/>/g, "&gt;")
 				};
-				if(chat.length <= 512) {
+				if(chat.length <= 512 || isStaff) {
 					console.log("World name: " + worldName + ". Id/Nick: " + before + ". Message: " + chat + ".")
 					if(chat[0] != "/") {
 						var clients = world.clients;
