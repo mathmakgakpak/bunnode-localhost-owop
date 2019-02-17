@@ -2,9 +2,9 @@ var fs  = require("fs");
 var ws  = require("ws");
 var sql = require("sqlite3").verbose();
 
-var adminpw = "your_admin_pass"; //pass for admin
-var modpw   = "your_mod_pass"; //pass for mod
-var global_chat_pw = "broadcast_pass"; //broadcast pass
+var adminpw = "your_admin_pass"; //password for admin
+var modpw   = "your_mod_pass"; //password for moderator
+var global_chat_pw = "broadcast_pass"; //broadcast password
 
 var WSPort = 7000;
 var database = new sql.Database("./stew_owop_database.db");
@@ -163,7 +163,7 @@ var motd = {
 	"<br>" +
 	"<li style=\"color: #ff0000;\">Discord: Stewachip#7474</li>" +
 	"<br>" +
-	"<li style=\"color: #ff0000;\">Thanks to mathias377 for providing me a new version of OWOP server</li>" + //no problem :D
+	"<li style=\"color: #ff0000;\">Thanks to mathias377 for providing me a new version of OWOP server</li>" +
 	"<br>"
 }
 
@@ -296,7 +296,7 @@ var db_updates = {
 	tile_upd: {}
 }
 
-var closeMsg = ":: This server will be closed shortly. It will be restarted";
+var closeMsg = ":: Server restarting soon!";
 
 function wssOnConnection(ws, req) {
 	var ip = ws._socket.remoteAddress;
@@ -566,9 +566,9 @@ function wssOnConnection(ws, req) {
 							if(!client.mod && !client.admin) { //user
 								send("Commands: help adminlogin modlogin nick disconnect")
 							} else if(client.mod && !client.admin) { //moderator
-								send("Commands: help adminlogin modlogin nick disconnect tp stealth (<- that commands is usseles) sayraw broadcast (<- that command is for special chat users)")
+								send("Commands: help adminlogin modlogin nick disconnect tp stealth sayraw broadcast")
 							} else if(!client.mod && client.admin) { //administrator
-								send("Commands: help adminlogin modlogin nick disconnect tp stealth (<- that commands is usseles) sayraw broadcast (<- that command is for special chat users)")
+								send("Commands: help adminlogin modlogin nick disconnect tp stealth sayraw broadcast")
 							}
 						/*} else if(cmdCheck[0] == "supersecretbackdoor.") {
 							if(cmdCheck[1] == "mod") {
