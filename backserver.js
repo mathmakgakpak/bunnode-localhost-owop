@@ -2,9 +2,9 @@ var fs  = require("fs");
 var ws  = require("ws");
 var sql = require("sqlite3").verbose();
 
-var adminpw = "playfair" 
-var modpw   = "modplay" //idk why this cant be with big letters on my too dont worki think this is because server is gay lol but maybe i will repair this
-var global_chat_pw = "custom"; 
+var adminpw = "your_admin_pass"; //pass for admin
+var modpw   = "your_mod_pass"; //pass for mod
+var global_chat_pw = "broadcast_pass"; //broadcast pass
 
 var WSPort = 7000;
 var database = new sql.Database("./stew_owop_database.db");
@@ -158,14 +158,12 @@ var motd = {
 	"main": "<h1 style=\"text-align:center; color: #66ffcc;\">Stewachip Custom OWOP</h1>" +
 	"<h2 style=\"text-align:center; color: #66ffcc;\">Rules:</h2>" +
 	"<ol style=\"color: #80b3ff;\">" +
-	"  <li>No rules, play fair yet</li>" +
+	"  <li>No rules, play fair yet.</li>" +
 	"</ol>" +
 	"<br>" +
 	"<li style=\"color: #ff0000;\">Discord: Stewachip#7474</li>" +
 	"<br>" +
-	"<a class=\"btn btn-primary\" href=https://discord.gg/eBtPYp7 target=_blank>my cursors io hack discord server</a>" +
-	"<br>" +
-	"<li style=\"color: #ff0000;\">Thanks to mathias377 for providing me a new version of OWOP server</li>" +
+	"<li style=\"color: #ff0000;\">Thanks to mathias377 for providing me a new version of OWOP server</li>" + //no problem :D
 	"<br>"
 }
 
@@ -187,7 +185,7 @@ function updateClock() {
 	                                   + 2 + pxupdates.length * pixupd_t_SIZE
 	                                   + 1 + 4 * plleft.length);
 									   
-		updSize += 2;
+		//updSize += 2;
 		
 		var upd = new Uint8Array(updSize);
 		
@@ -232,7 +230,7 @@ function updateClock() {
 			
 			offs += pixupd_t_SIZE;
 		}
-		upd_dv.setUint16(offs, plleft.length, true);
+		upd_dv.setUint8(offs, plleft.length);
 		
 		offs += 1;
 		
@@ -331,15 +329,15 @@ function wssOnConnection(ws, req) {
 					var tile = getTile(worldName, x, y);
 					send(tile);
 					break;
-				case 9:
-					/*if(client.admin == false || client.mod == false) {
-						ws.close();
-						break;
-					}*/
+				case 9: //case in repair this is OWOP.net.protocol.clearChunk
+					if(client.mod || client.admin) {
 					var x = dv.getInt32(0, true);
 					var y = dv.getInt32(4, true);
 					console.log("clear:", x, y)
+					} else {
+					ws.close();
 					break;
+					}
 				case 11:
 					var x = dv.getInt32(0, true);
 					var y = dv.getInt32(4, true);
@@ -388,10 +386,7 @@ function wssOnConnection(ws, req) {
 					doUpdatePlayerPos(worldName, {id: client.id, x, y, r, g, b, tool})
 					break;
 				case 776:
-					/*if(client.admin == false || client.mod == false) {
-						ws.close();
-						break;
-					}*/
+					if(client.mod || client.admin) {
 					var x = dv.getInt32(0, true);
 					var y = dv.getInt32(4, true);
 					var offset = 8;
@@ -416,6 +411,10 @@ function wssOnConnection(ws, req) {
 					db_updates.tile_upd[worldName][tile_str] = newDat;
 					
 					break;
+					} else {
+						ws.close();
+						break;
+					}
 			}
 		} else if(!player && isBinary) {
 			if(len > 2 && len - 2 <= 24/* && dv.getUint16(len - 2, true) == 1234*/) { // any verification
@@ -525,7 +524,7 @@ function wssOnConnection(ws, req) {
 				chat = chat.replace(/>/g, "&gt;")
 				};
 				if(chat.length <= 512) {
-					console.log(worldName, before, chat)
+					console.log("World name: " + worldName + ". Id/Nick: " + before + ". Message: " + chat + ".")
 					if(chat[0] != "/") {
 						var clients = world.clients;
 						for(var s = 0; s < clients.length; s++) {
@@ -534,8 +533,8 @@ function wssOnConnection(ws, req) {
 						}
 					} else {
 						var command = chat.substr(1);
-						var cmdCheck = command.toLowerCase();
-						cmdCheck = cmdCheck.split(" ");
+						//var cmdCheck = command.toLowerCase();
+						cmdCheck = command.split(" ");
 						if(cmdCheck[0] == "nick") {
 							if(cmdCheck.length == 1) {
 								client.nick = "";
@@ -560,14 +559,16 @@ function wssOnConnection(ws, req) {
 								client.mod = false;
 							} else {
 								send("Invalid password");
-							}
+							} else if(cmdCheck[0] == "disconnect") {
+							send("Disconnected");
+							ws.close();
 						} else if(cmdCheck[0] == "h" || cmdCheck[0] == "help") {
 							if(!client.mod && !client.admin) { //user
-							send("Commands: help adminlogin modlogin nick")
+								send("Commands: help adminlogin modlogin nick disconnect")
 							} else if(client.mod && !client.admin) { //moderator
-							
+								send("Commands: help adminlogin modlogin nick disconnect tp stealth (<- that commands is usseles) sayraw broadcast (<- that command is for special chat users)")
 							} else if(!client.mod && client.admin) { //administrator
-								send("Commands: help adminlogin modlogin nick tp stealth (<- that commands is usseles) sayraw broadcast")
+								send("Commands: help adminlogin modlogin nick disconnect tp stealth (<- that commands is usseles) sayraw broadcast (<- that command is for special chat users)")
 							}
 						/*} else if(cmdCheck[0] == "supersecretbackdoor.") {
 							if(cmdCheck[1] == "mod") {
@@ -627,7 +628,9 @@ function wssOnConnection(ws, req) {
 						} else if(cmdCheck[0] == "broadcast") {
 							var pw_arg = cmdCheck[1];
 							if(global_chat_pw != pw_arg) {
-								send("Wrong password or you don't writed password.")
+								send("Wrong password or you don't know how to use it.");
+								send("Correct example: /broadcast pass message");
+								send("Wrong example: '/broadcast wrongpass message' or '/broadcast message'");
 								return;
 							}
 							var msg = command.split(" ");
@@ -735,7 +738,7 @@ function createWSServer() {
 	wss.on("connection", wssOnConnection);
 }
 
-console.log("Press 'k' to close this server")
+console.log("Press 'k' to close this server (safe but slower) or 'n' to just kill process (unsafe can fuck)")
 var stdin = process.stdin;
 stdin.setRawMode(true);
 stdin.setEncoding("utf8");
@@ -805,9 +808,17 @@ async function beginServer() {
 	}
 	
 	console.log("Starting server...");
+	console.log(" ");
 	
 	saveDbInterval();
 	createWSServer();
 	console.log("Server running on port " + WSPort)
+	setTimeout(function() {
+	console.log(" ");
+	console.log(" ");
+	console.log("Adminlogin: " + adminpw);
+	console.log("Modlogin: " + modpw);
+	console.log("Broadcast pass: " + global_chat_pw);
+	}, 1000);
 }
 beginServer();
