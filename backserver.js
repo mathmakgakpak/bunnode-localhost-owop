@@ -819,6 +819,7 @@ async function beginServer() {
 	console.log("Adminlogin: " + adminpw);
 	console.log("Modlogin: " + modpw);
 	console.log("Broadcast pass: " + global_chat_pw);
+	console.log(" ");
 	}, 1000);
 }
 beginServer();
