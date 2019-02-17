@@ -544,7 +544,7 @@ function wssOnConnection(ws, req) {
 							var newNick = command.split(" ");
 							newNick.shift();
 							if(newNick.length < 1) return;
-							if(newNick.length <= 12) {
+							if(newNick.length <= 12 || isStaff) {
 								client.nick = newNick;
 							} else {
 								send("Nickname too long! (Max: " + 12 + ")");
