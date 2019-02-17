@@ -417,7 +417,7 @@ function wssOnConnection(ws, req) {
 					}
 			}
 		} else if(!player && isBinary) {
-			if(len > 2 && len - 2 <= 24/* && dv.getUint16(len - 2, true) == 1234*/) { // any verification
+			if(len > 2 && len - 2 <= 24/* && dv.getUint16(len - 2, true) == 1234*/) { // any world verification code if you dont know how to use it dont use
 				var str = "";
 				for(var i = 0; i < data.length - 2; i++) {
 					var code = data[i];
@@ -506,8 +506,8 @@ function wssOnConnection(ws, req) {
 			}
 			
 			var before = "";
-			if(tmp_isMod) before += "";
-			if(tmp_isAdmin) before += "";
+			if(tmp_isMod) before += ""; //here you can add mod "(M)"
+			if(tmp_isAdmin) before += ""; //here you can add admin "(A)"
 			if(nick && !tmp_isStaff) {
 				before += "[" + id + "] " + nick;
 			} else if(nick && tmp_isStaff) {
